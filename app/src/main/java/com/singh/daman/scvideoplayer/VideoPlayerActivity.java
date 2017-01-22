@@ -1,6 +1,7 @@
 package com.singh.daman.scvideoplayer;
 
-import android.app.ProgressDialog;
+import android.content.Context;
+import android.graphics.PixelFormat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -9,66 +10,48 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.MediaController;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 public class VideoPlayerActivity extends AppCompatActivity {
-    ProgressDialog pDialog;
-    VideoView videoview;
+    private VideoView player;
+    int size;
+    String storagePath = Environment.getExternalStorageDirectory().toString() + "/FILE.mp4";
+    File file;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get the layout from video_main.xml
+        getWindow().setFormat(PixelFormat.TRANSLUCENT);
         setContentView(R.layout.activity_video_player);
-        // Find your VideoView in your video_main.xml layout
-
         ProgressBack PB = new ProgressBack();
         PB.execute("");
 
-        videoview = (VideoView) findViewById(R.id.VideoView);
+        file = new File(storagePath);
 
-        try {
-            // Start the MediaController
-            MediaController mediacontroller = new MediaController(
-                    VideoPlayerActivity.this);
-            mediacontroller.setAnchorView(videoview);
-            // Get the URL from String VideoURL
-            String storagePath = Environment.getExternalStorageDirectory().toString();
-            Uri video = Uri.parse(storagePath+"/FILE.mp4");
-            videoview.setMediaController(mediacontroller);
-            videoview.setVideoURI(video);
-
-        } catch (Exception e) {
-            Log.e("Error", e.getMessage());
-            e.printStackTrace();
+        player = (VideoView) findViewById(R.id.VideoView);
+        player.setVideoURI(Uri.fromFile(file));
+        player.setMediaController(new MediaController(this));
+        if (file.length() > 0) {
+            player.start();
         }
-
-        videoview.requestFocus();
-        videoview.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            // Close the progress bar and play the video
-            public void onPrepared(MediaPlayer mp) {
-                videoview.start();
-            }
-        });
-
+        if (file.length() != size) {
+            player.getCurrentPosition();
+        }
     }
 
-    private class ProgressBack extends AsyncTask<String, String, String> {
-        ProgressDialog PD;
 
+
+    private class ProgressBack extends AsyncTask<String, Integer, String> {
         @Override
         protected void onPreExecute() {
         }
@@ -84,9 +67,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onProgressUpdate(String... values) {
+        protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            System.out.println(values);
         }
     }
 
@@ -97,15 +79,10 @@ public class VideoPlayerActivity extends AppCompatActivity {
             u = new URL(videoURL);
             is = u.openStream();
             HttpURLConnection huc = (HttpURLConnection) u.openConnection(); //to know the size of video
-            int size = huc.getContentLength();
-
-            System.out.println(size);
+            size = huc.getContentLength();
 
             if (huc != null) {
-                String fileName = "FILE.mp4";
-                String storagePath = Environment.getExternalStorageDirectory().toString();
-                File f = new File(storagePath, fileName);
-                FileOutputStream fos = new FileOutputStream(f);
+                FileOutputStream fos = new FileOutputStream(file);
                 byte[] buffer = new byte[1024];
                 int len1 = 0;
                 if (is != null) {
@@ -129,8 +106,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
             } catch (IOException ioe) {
                 // just going to ignore this one
             }
-
-
         }
     }
 }

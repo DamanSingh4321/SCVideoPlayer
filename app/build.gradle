@@ -27,5 +27,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.afollestad:easyvideoplayer:0.3.0'
     compile 'com.afollestad.material-dialogs:core:0.9.1.0'
+    compile 'com.google.android.exoplayer:exoplayer:r2.1.1'
     testCompile 'junit:junit:4.12'
 }
