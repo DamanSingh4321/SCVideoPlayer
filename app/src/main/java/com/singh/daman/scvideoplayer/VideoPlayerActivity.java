@@ -1,11 +1,17 @@
 package com.singh.daman.scvideoplayer;
 
-import android.graphics.PixelFormat;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
+
+import com.devbrackets.android.exomedia.listener.OnCompletionListener;
 import com.devbrackets.android.exomedia.listener.OnPreparedListener;
 import com.devbrackets.android.exomedia.ui.widget.EMVideoView;
 import java.io.File;
@@ -15,7 +21,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Random;
 
 public class VideoPlayerActivity extends AppCompatActivity implements OnPreparedListener {
     EMVideoView emVideoView;
@@ -27,22 +32,38 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnPrepared
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFormat(PixelFormat.TRANSLUCENT);
         setContentView(R.layout.activity_video_player);
 
-        ProgressBack PB = new ProgressBack();
-        PB.execute("");
+        Toolbar toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
 
-        file = new File(storagePath);
+        if(isNetworkAvailable()) {
+            ProgressBack progressBack = new ProgressBack();
+            progressBack.execute("");
 
-        emVideoView = (EMVideoView) findViewById(R.id.video_view);
+            file = new File(storagePath);
+
+            emVideoView = (EMVideoView) findViewById(R.id.video_view);
+            startVideo();
+        }
+        else{
+            Toast.makeText(this, "No Internet Connection!!!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void startVideo(){
         emVideoView.setOnPreparedListener(this);
         emVideoView.setVideoURI(Uri.fromFile(file));
+        emVideoView.setOnCompletionListener(new OnCompletionListener() {
+            @Override
+            public void onCompletion() {
+                emVideoView.restart();
+            }
+        });
     }
 
     @Override
     public void onPrepared() {
-        //Starts the video playback as soon as it is ready
         emVideoView.start();
     }
 
@@ -53,7 +74,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnPrepared
 
         @Override
         protected String doInBackground(String... arg0) {
-            downloadFile("https://socialcops.com/images/spec/home/header-img-background_video-1920-480.mp4", "Sample.mp4");
+            downloadFile("https://socialcops.com/images/spec/home/header-img-background_video-1920-480.mp4");
             return null;
         }
 
@@ -67,7 +88,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnPrepared
         }
     }
 
-    private void downloadFile(String videoURL, String name) {
+    private void downloadFile(String videoURL) {
         URL u = null;
         InputStream is = null;
         try {
@@ -99,8 +120,15 @@ public class VideoPlayerActivity extends AppCompatActivity implements OnPrepared
                     is.close();
                 }
             } catch (IOException ioe) {
-                // just going to ignore this one
+
             }
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
     }
 }
