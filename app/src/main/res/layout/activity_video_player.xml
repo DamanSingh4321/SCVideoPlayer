@@ -1,14 +1,16 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     xmlns:EMVideoView="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    android:background="@color/background">
 
     <com.devbrackets.android.exomedia.ui.widget.EMVideoView
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         EMVideoView:useDefaultControls="true"/>
 
-</LinearLayout>
+</RelativeLayout>
